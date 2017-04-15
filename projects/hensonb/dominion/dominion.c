@@ -1205,9 +1205,9 @@ int playBaron(struct gameState *state, int handPos, int currentPlayer, int choic
 					printf("No estate cards in your hand, invalid choice\n");
 					printf("Must gain an estate if there are any\n");
 				}
-				// if (supplyCount(estate, state) > 0){
+				// if (supplyCount(estate, state) > 0){ // redundant but benign, also checked within gainCard
 					gainCard(estate, state, 0, currentPlayer); // this is shared with the "choose not to discard" section
-					state->supplyCount[estate]--;//Decrement estates
+					state->supplyCount[estate]--; //redundant and BAD, also done within gainCard!!
 					if (supplyCount(estate, state) == 0){
 						isGameOver(state);
 					}
@@ -1291,8 +1291,7 @@ int playSmithy(struct gameState *state, int handPos, int player) {
 	}
 
 	//discard card from hand
-	discardCard(handPos, 0, state, 0);
-	// discardCard(handPos, player, state, 0);
+	discardCard(handPos, player, state, 0);
 	return 0;
 }
 
