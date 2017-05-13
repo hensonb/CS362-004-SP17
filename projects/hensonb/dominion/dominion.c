@@ -576,7 +576,7 @@ int drawCard(int player, struct gameState *state)
   else{
     int count = state->handCount[player];//Get current hand count for player
     int deckCounter = state->deckCount[player];//Create holder for the deck count
-	int i = 0;
+	// int i = 0;
     if (DEBUG){//Debug statements
       printf("Current hand count: %d\n", count);
       printf("Card being drawn: %d\n", state->deck[player][deckCounter - 1]);
@@ -1154,26 +1154,44 @@ int cardEffect(int card, int choice1, int choice2, int choice3, struct gameState
 
 
 int playRemodel(struct gameState *state, int handPos, int currentPlayer, int choice1, int choice2) {
-	// trash a card in your hand and upgrade it
+	// trash a card in your hand and upgrade it, +2 value
 	// BUG: pre-existing, discards the chosen card instead of trashing it
+	// BUG: doesn't check for invalid user inputs (user-provided values may be illogical)
+	// BUG: doesn't handle all failing cases! might fail because supply > discard+2, or supply is empty, or invalid supply, or invalid discard(index or don't have)
+	// BUG: compares the supply and the trashed card backwards!
 	int j = 0;
 	int i = 0;
-
 	j = state->hand[currentPlayer][choice1];  //store card we will trash
+	/*
+	if((choice1 < 0) || (choice1 >= state->handCount[currentPlayer])) {return -1;} // invalid discard index // fix
+	if((choice2 < 0) || (choice2 > treasure_map)) {return -1;} // invalid supply pile // fix
+	if(j==remodel) { // if wanting to discard remodel from playing remodel, need to make sure there are 2 in hand // fix
+		int z = 0; // fix
+		for (i = 0; i < state->handCount[currentPlayer]; i++) { // fix
+			if (state->hand[currentPlayer][i] == j){ // fix
+				z++; // fix
+			} // fix
+		} // fix
+		if(z<2) {return -1;} // fix
+	} // fix
+	*/
+	// if ( (getCost(state->hand[currentPlayer][choice1]) + 2) < getCost(choice2) ) { // fix
 	if ( (getCost(state->hand[currentPlayer][choice1]) + 2) > getCost(choice2) ) {
-		return -1;
+		return -1; // supply > discard+2
 	}
+	
+	i = gainCard(choice2, state, 0, currentPlayer);
+	// if(i==-1) {return -1;} // supply is empty // fix
 
-	gainCard(choice2, state, 0, currentPlayer);
-
+	
 	//discard card from hand
 	discardPlayedCard(handPos, currentPlayer, state, 0);
-
+	
 	//iterate until finding the card we said we wanted to trash (position may have moved after discarding Remodel)
 	for (i = 0; i < state->handCount[currentPlayer]; i++) {
 		if (state->hand[currentPlayer][i] == j){
-			discardPlayedCard(i, currentPlayer, state, 0);                        
-			// discardPlayedCard(i, currentPlayer, state, 1);                        
+			discardPlayedCard(i, currentPlayer, state, 0);
+			// discardPlayedCard(i, currentPlayer, state, 1); // fix
 			break;
 		}
 	}
@@ -1266,11 +1284,11 @@ int playAdventurer(struct gameState *state, int handPos, int currentPlayer) {
 			shuffle(currentPlayer, state); // not useful, drawCard already shuffles
 		}
 		err = drawCard(currentPlayer, state);
-		if(err == -1) {
-			break;
-		}
+		// this fixes the potentially infinite loop, without it the hand index becomes increasingly negative until it finds
+		// 		an int that corresponds to a treasure somewhere earlier in the struct (or before it)
+		// if(err == -1) { break; } // fix
 		cardDrawn = state->hand[currentPlayer][state->handCount[currentPlayer]-1];//top card of hand is most recently drawn card.
-		// if (cardDrawn == copper || cardDrawn == silver || cardDrawn == gold){
+		// if (cardDrawn == copper || cardDrawn == silver || cardDrawn == gold){ // fix
 		if (cardDrawn == copper || cardDrawn == gold){
 			drawntreasure++;
 		}else{
@@ -1293,7 +1311,7 @@ int playAdventurer(struct gameState *state, int handPos, int currentPlayer) {
 	}
 	
 	//discard card from hand
-	// discardPlayedCard(handPos, currentPlayer, state, 0);
+	// discardPlayedCard(handPos, currentPlayer, state, 0); // fix
 
 	return err;
 }
@@ -1303,16 +1321,19 @@ int playAdventurer(struct gameState *state, int handPos, int currentPlayer) {
 int playSmithy(struct gameState *state, int handPos, int player) {
 	// draw 3 cards
 	// BUG: really easy, draws cards/discards from player 1's hand, not whoever played it
+	// BUG: always returns 0, but should probably return -1 when deck/discard are empty or less than 3
 	int i = 0;
+	int err = 0;
 	for (i = 0; i < 3; i++)
 	{
 		drawCard(0, state);
-		// drawCard(player, state);
+		// err = drawCard(player, state); // fix
+		
 	}
 
 	//discard card from hand
 	discardPlayedCard(handPos, player, state, 0);
-	return 0;
+	return err;
 }
 
 

@@ -40,6 +40,28 @@ criteria to test:
 	adventurer is discarded to 'playedCards'
 */
 
+
+void showCards (struct gameState *G, int thisPlayer) {
+	int i=0;
+	printf("*Hand=%i:\t",G->handCount[thisPlayer]);
+	for (i = 0; i < G->handCount[thisPlayer]; i++) {
+		printf("%i, ",G->hand[thisPlayer][i]);
+	}
+	printf("\n*Deck=%i:\t",G->deckCount[thisPlayer]);
+	for (i = 0; i < G->deckCount[thisPlayer]; i++) {
+		printf("%i, ",G->deck[thisPlayer][i]);
+	}
+	printf("\n*Discard=%i:\t",G->discardCount[thisPlayer]);
+	for (i = 0; i < G->discardCount[thisPlayer]; i++) {
+		printf("%i, ",G->discard[thisPlayer][i]);
+	}
+	printf("\n");
+}
+
+// basically memset but for ints
+void fillArray (int A[], int limit, int val) {int i = 0;for(i = 0; i < limit; i++) {A[i] = val;}}
+
+
 int main() {
 	// seed must be static, for reproducibility
 	int seed = 1910;
@@ -62,12 +84,20 @@ int main() {
 	
 	// use a more interesting hand
 	G.handCount[thisPlayer] = 5;
-	memset(G.hand[thisPlayer], 1, G.handCount[thisPlayer]); // fill the hand with estates
+	// memset(G.hand[thisPlayer], 1, G.handCount[thisPlayer]*sizeof(int)); // fill the hand with estates
+	// G.hand[thisPlayer] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+	fillArray(G.hand[thisPlayer],G.handCount[thisPlayer],1);
 	G.deckCount[thisPlayer] = 5;
-	memset(G.deck[thisPlayer], 1, G.deckCount[thisPlayer]); // fill the deck with estates
+	// memset(G.deck[thisPlayer], 1, G.deckCount[thisPlayer]*sizeof(int)); // fill the deck with estates
+	// G.deck[thisPlayer] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+	fillArray(G.deck[thisPlayer],G.deckCount[thisPlayer],1);
 	G.discardCount[thisPlayer] = 5;
-	memset(G.discard[thisPlayer], 1, G.discardCount[thisPlayer]); // fill the discard with estates
+	// memset(G.discard[thisPlayer], 1, G.discardCount[thisPlayer]*sizeof(int)); // fill the discard with estates
+	// G.discard[thisPlayer] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+	fillArray(G.discard[thisPlayer],G.discardCount[thisPlayer],1);
 	G.hand[thisPlayer][1] = adventurer;
+	
+	showCards(&G, thisPlayer);
 	
 	memcpy(&testG, &G, sizeof(struct gameState)); // create a copy of gamestate object
 	// cardEffect(card, choice1, choice2, choice3, state, handPos, &coin_bonus)
@@ -88,6 +118,7 @@ int main() {
 	// print out result
 	if(fail) {printf("\tFAIL!\n");} else {printf("\tpass\n");}
 	
+	showCards(&G, thisPlayer);
 	
 	
 	memset(&G, 0, sizeof(struct gameState));	// clear the game state, just to be safe
