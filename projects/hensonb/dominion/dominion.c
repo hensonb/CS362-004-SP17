@@ -1283,13 +1283,13 @@ int playAdventurer(struct gameState *state, int handPos, int currentPlayer) {
 		if (state->deckCount[currentPlayer] <1){//if the deck is empty we need to shuffle discard and add to deck
 			shuffle(currentPlayer, state); // not useful, drawCard already shuffles
 		}
-		err = drawCard(currentPlayer, state);
+		// err = drawCard(currentPlayer, state);
 		// this fixes the potentially infinite loop, without it the hand index becomes increasingly negative until it finds
 		// 		an int that corresponds to a treasure somewhere earlier in the struct (or before it)
-		// if(err == -1) { break; } // fix
+		if(err == -1) { break; } // fix
 		cardDrawn = state->hand[currentPlayer][state->handCount[currentPlayer]-1];//top card of hand is most recently drawn card.
-		// if (cardDrawn == copper || cardDrawn == silver || cardDrawn == gold){ // fix
-		if (cardDrawn == copper || cardDrawn == gold){
+		if (cardDrawn == copper || cardDrawn == silver || cardDrawn == gold){ // fix
+		// if (cardDrawn == copper || cardDrawn == gold){
 			drawntreasure++;
 		}else{
 			// copy the card to a "temphand"; it still exists in the players real hand
@@ -1311,7 +1311,7 @@ int playAdventurer(struct gameState *state, int handPos, int currentPlayer) {
 	}
 	
 	//discard card from hand
-	// discardPlayedCard(handPos, currentPlayer, state, 0); // fix
+	discardPlayedCard(handPos, currentPlayer, state, 0); // fix
 
 	return err;
 }

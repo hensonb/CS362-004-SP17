@@ -1,0 +1,43 @@
+Brian Henson
+
+I found many, many bugs in the base Dominion code, before I even added my own bugs. All of these bugs are still 
+present in Ilya's version of the code. Below, I will describe two of them. 
+
+Firstly, there is a very severe bug in the Adventurer code. Simply put, if there are 1 or 0 treasure cards 
+remaining in a player's combined deck/discard, the loop will run potentially infinitely, iterating to create an 
+increasingly negative hand size until it finds what looks like a treasure card, even though that card is somewhere way 
+beyond the bounds of the hand array.
+I found this bug via inspection, before even running any tests. It occurred to me that there was no "break" 
+statement, and therefore the only way it would leave the loop was if it found two treasures (erroneously) or 
+it would run forever. 
+This bug is the result of not catching the return value of the drawCard function at line 678. This function 
+will return -1 if the deck is still empty after combining the whole discard pile into it, which is exactly the 
+condition that we care about. However, it is not stored or used. 
+The likelyhood of this bug being encountered by users is 2/5; the scenario is simple to set up, but 
+the Adventurer card is already unpopular, and there is usually a high ratio of treasure cards in a person's 
+entire deck, so it would be rare that this card is played while there are not enough treasures to find. However, 
+based on the 5/5 severity of the bug when it does occur (putting the game in an invalid state for the player 
+who used this card, as well as accessing and modifying data outside the array bounds), I would rate this 
+bug a 4/5 priority to fix. 
+
+
+Secondly, there is a very severe bug in the discardCard function in combination with the endTurn function. The 
+result of this bug is that whenever an action card is played, it is lost forever (but not actually trashed). 
+
+I found this bug via inspection, before even running any tests. When designing unit tests for the function, 
+I wanted to know how it behaved, so I was reading the code. However, to my surprise the cards discarded with 
+this function are NOT put into the actual "discard" array! Instead, they are put into a playedCards array. 
+
+This itself is not the bug. "PlayedCards" is a temporary zone for any action cards that are played in a turn, 
+to hold them so they don’t get shuffled in if the deck is empty. I believe this is proper game behavior, because 
+this would prevent a player with a small enough deck from infinitely looping a pair of Market cards for 
+infinite money and buys. This playedCards pile is supposed to be moved to the normal discard pile at the end 
+of turn. 
+The real cause of the bug is that the playedCards pile is never actually moved to discard. This should happen 
+once per turn, at the end of the turn, but does not. The endTurn function is at line 354. 
+This bug has a severity of 4/5, because it changes the game in a slow and constant fashion, requiring a much 
+different playstyle. It has a priority of 5/5 because, in addition to the severity, it is unavoidable in any 
+game of Dominion. 
+
+
+
